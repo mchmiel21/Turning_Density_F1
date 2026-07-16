@@ -1,6 +1,7 @@
 # Project-specific items
 f1_cache/
 test_algorithm.py
+Archive/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
