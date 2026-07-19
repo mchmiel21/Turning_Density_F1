@@ -6,14 +6,22 @@ The proposed ***Turning Density (TD)*** metric is defined as the cumulative abso
 
 The ***Lateral G-Weighted Turning Density (LGWTD)*** metric weights *Turning Density* by how many Lateral Gs are being experienced during each turn (each discrete sample of heading change). Therefore, high-G turns, especially sustained high-G turns, will contribute more heavily than low-G turns, in an attempt to better characterize the "severity" of a circuit's turning profile.
 
-- `compute_TD_and_LGWTD.py` calculates, plots, and stores *Turning Density* and *Lateral G-Weighted Turning Density* charts for Formula 1 circuits of any given year, based on telemetry data from all push/flying laps from qualifying. 
-- The only required user input is the calendar year/season you would like to run (the `year` variable at the very top of the script).
+<!-- View analysis related to these results here: [ANALYSIS.md](ANALYSIS.md) -->
+
+- `compute_TD_and_LGWTD.py` calculates and stores *Turning Density* and *Lateral G-Weighted Turning Density* results for Formula 1 circuits of any given year, based on telemetry data from all push/flying laps from qualifying. 
+    - The only required user input is the calendar year/season you would like to run (the `year` variable at the very top of the script).
+- `make_plots.py` generates and saves plots to the "Result Images" directory, using the data previously computed by `compute_TD_and_LGWTD.py`.
+    - Types of output plots are described in the following **Outputs** section.
+    - Each function (called in the main function) creates and saves a different type of plot.
 
 ## Outputs
-- CSV files containing the computed *Turning Density* (in deg/km) and *Lateral G-Weighted Turning Density* (in G-deg/km) and corresponding ranks, as well as the total turning (in degrees) and total distance (in km) used to calculate *Turning Density*
-- Bar charts ranking all circuits by *TD* and *LGWTD*, color-coded by circuit type (permanent vs. non-permanent)
-- A pictorial grid of circuit maps colored by qualifying speed, ordered from top-left to bottom-right by *TD* (highest to lowest)
-- A pictorial grid of circuit maps colored by lateral G-force, ordered from top-left to bottom-right by *LGWTD* (highest to lowest)
+- Raw data:
+    - CSV files containing the computed *Turning Density* (in deg/km) and *Lateral G-Weighted Turning Density* (in G-deg/km) and corresponding ranks, as well as the total turning (in degrees) and total distance (in km) used to calculate *Turning Density*
+    - Parquet files containing all data in the CSV files, plus X/Y coordinate traces of each circuit and average speeds and lateral G forces experienced at all X/Y coordinates from qualifying
+- Plots/Images:
+    - Bar charts ranking all circuits by *TD* and *LGWTD*, color-coded by circuit type (permanent vs. non-permanent)
+    - A pictorial grid of circuit maps colored by qualifying speed, ordered from top-left to bottom-right by *TD* (highest to lowest)
+    - A pictorial grid of circuit maps colored by lateral G-force, ordered from top-left to bottom-right by *LGWTD* (highest to lowest)
 
 ## Methodology
 - This code uses data from all valid qualifying push laps as follows: 
@@ -35,6 +43,7 @@ This script requires Python along with:
 - fastf1
 - numpy
 - pandas
+    - pyarrow
 - matplotlib
 - seaborn
 
@@ -44,13 +53,13 @@ This script requires Python along with:
 
 ## Example Results from 2025:
 
-![2025 Turning Density Circuit Maps Plot](Images/Circuit Maps/2025_F1_TD_circuit_maps.png)
+![2025 Turning Density Circuit Maps Plot](Result Images/Circuit Maps/2025_F1_TD_circuit_maps.png)
 
-![2025 LGWTD Circuit Maps Plot](Images/Circuit Maps/2025_F1_LGWTD_circuit_maps.png)
+![2025 LGWTD Circuit Maps Plot](Result Images/Circuit Maps/2025_F1_LGWTD_circuit_maps.png)
 
-![2025 Turning Density Bar Chart](Images/Bar Charts/2025_F1_TD_bar_chart.png)
+![2025 Turning Density Bar Chart](Result Images/Bar Charts/2025_F1_TD_bar_chart.png)
 
-![2025 LGWTD Bar Chart](Images/Bar Charts/2025_F1_LGWTD_bar_chart.png)
+![2025 LGWTD Bar Chart](Result Images/Bar Charts/2025_F1_LGWTD_bar_chart.png)
 
 ## Notice
 Turning_Density_F1 and this website are unofficial and are not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.

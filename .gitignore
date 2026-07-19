@@ -5,6 +5,7 @@ Archive/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
+from_TracingInsights/__pycache__/
 *.py[codz]
 *$py.class
 
