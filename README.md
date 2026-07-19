@@ -2,7 +2,7 @@
 Analysis and visualizations of Formula 1 Circuit ***Turning Densities***
 
 ## Description
-The proposed ***Turning Density (TD)*** metric is defined as the cumulative absolute change in vehicle path heading normalized by lap distance. Therefore, higher values indicate tighter, more directionally complex circuits, while lower values indicate straighter or more flowing circuits.
+The proposed ***Turning Density (TD)*** metric is defined as the cumulative absolute change in vehicle path heading normalized by lap distance. Therefore, higher values indicate more directionally complex circuits while lower values indicate straighter circuits.
 
 The ***Lateral G-Weighted Turning Density (LGWTD)*** metric weights *Turning Density* by how many Lateral Gs are being experienced during each turn (each discrete sample of heading change). Therefore, high-G turns, especially sustained high-G turns, will contribute more heavily than low-G turns, in an attempt to better characterize the "severity" of a circuit's turning profile.
 
