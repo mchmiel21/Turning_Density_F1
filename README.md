@@ -53,13 +53,13 @@ This script requires Python along with:
 
 ## Example Results from 2025:
 
-![2025 Turning Density Circuit Maps Plot](Result Images/Circuit Maps/2025_F1_TD_circuit_maps.png)
+![2025 Turning Density Circuit Maps Plot](<Result Images/Circuit Maps/2025_F1_TD_circuit_maps.png>)
 
-![2025 LGWTD Circuit Maps Plot](Result Images/Circuit Maps/2025_F1_LGWTD_circuit_maps.png)
+![2025 LGWTD Circuit Maps Plot](<Result Images/Circuit Maps/2025_F1_LGWTD_circuit_maps.png>)
 
-![2025 Turning Density Bar Chart](Result Images/Bar Charts/2025_F1_TD_bar_chart.png)
+![2025 Turning Density Bar Chart](<Result Images/Bar Charts/2025_F1_TD_bar_chart.png>)
 
-![2025 LGWTD Bar Chart](Result Images/Bar Charts/2025_F1_LGWTD_bar_chart.png)
+![2025 LGWTD Bar Chart](<Result Images/Bar Charts/2025_F1_LGWTD_bar_chart.png>)
 
 ## Notice
 Turning_Density_F1 and this website are unofficial and are not associated in any way with the Formula 1 companies. F1, FORMULA ONE, FORMULA 1, FIA FORMULA ONE WORLD CHAMPIONSHIP, GRAND PRIX and related marks are trade marks of Formula One Licensing B.V.
