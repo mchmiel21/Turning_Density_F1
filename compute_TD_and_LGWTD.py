@@ -325,8 +325,8 @@ for r_num in race_rounds:
     circuit_name = event_row['Location']
     event_name = event_row['EventName']
     event_date = pd.Timestamp(event_row['EventDate']).tz_localize(None)
-    # Skip if the event hasn't happened yet
-    if event_date > pd.Timestamp.now().tz_localize(None):
+    # Skip if the qualifying session hasn't happened yet
+    if event_date > pd.Timestamp.now().tz_localize(None) + pd.Timedelta(hours=24):
         print(
             f"Skipping Round {r_num}: {circuit_name} "
             f"({event_name}) - future event"
