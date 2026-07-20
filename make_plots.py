@@ -29,14 +29,14 @@ def make_bar_chart_single_year(metric, year):
 	# Handle input differences by metric
 	if metric == "TD":
 		plot_col = 'Turning Density [deg/km]'
-		title_str = f'Formula 1 Circuit "Turning Density" Ranking ({year})'
-		xlabel_str = 'Degrees Turned per Kilometer of Track'
+		title_str = f'Turning Density (TD) Ranking of {year} Formula 1 Circuits'
+		xlabel_str = 'Degrees Turned per Kilometer of Track [°/km]'
 		units_str = '°/km'
 		annotation_pad = 50
 	elif metric == "LGWTD":
 		plot_col = 'Lateral G-Weighted Turning Density [G-deg/km]'
-		title_str = f'Formula 1 Circuit "Lateral G-Weighted Turning Density" Ranking ({year})'
-		xlabel_str = 'Lateral Gs times Degrees Turned per Kilometer of Track'
+		title_str = f'Lateral G-Weighted Turning Density (LGWTD) Ranking of {year} Formula 1 Circuits'
+		xlabel_str = 'Lateral G-Weighted Turning Density [G-°/km]'
 		units_str = ' G-°/km'
 		annotation_pad = 125
 	else:
@@ -126,14 +126,14 @@ def make_bar_chart_multiple_years(metric, years):
     # Handle input differences by metric
     if metric == "TD":
         plot_col = 'Turning Density [deg/km]'
-        title_str = f'Formula 1 Circuit "Turning Density" Ranking ({", ".join(map(str, years))})'
-        xlabel_str = 'Degrees Turned per Kilometer of Track'
+        title_str = f'Turning Density (TD) Ranking of {", ".join(map(str, years))} F1 Circuits'
+        xlabel_str = 'Degrees Turned per Kilometer of Track [°/km]'
         units_str = '°/km'
         annotation_pad = 50
     elif metric == "LGWTD":
         plot_col = 'Lateral G-Weighted Turning Density [G-deg/km]'
-        title_str = f'Formula 1 Circuit "Lateral G-Weighted Turning Density" Ranking ({", ".join(map(str, years))})'
-        xlabel_str = 'Lateral Gs times Degrees Turned per Kilometer of Track'
+        title_str = f'Lateral G-Weighted Turning Density (LGWTD) Ranking of {", ".join(map(str, years))} F1 Circuits'
+        xlabel_str = 'Lateral G-Weighted Turning Density [G-°/km]'
         units_str = ' G-°/km'
         annotation_pad = 125
     else:
@@ -375,7 +375,7 @@ def make_TD_speed_circuit_maps(year):
 		axes[empty_idx].axis('off')
 	# Overall title
 	fig.suptitle(
-		f'Formula 1 Circuit "Turning Density" Ranking ({year})',
+		f'Turning Density Ranking of {year} F1 Circuits',
 		fontsize=52,
 		fontweight='bold'
 	)
@@ -434,7 +434,7 @@ def make_LGWTD_gforce_circuit_maps(year):
 	axes = np.array(axes).flatten()
 	# Global speed limits so the colorbar is consistent across all circuits
 	Gmin = 0
-	Gmax = 6
+	Gmax = 6.5
 	norm = Normalize(vmin=Gmin, vmax=Gmax)
 	latG_cmap = plt.colormaps['afmhot'] # 'hot' might be better? or go 0-6.5?
 	# Generate each circuit map
@@ -503,7 +503,7 @@ def make_LGWTD_gforce_circuit_maps(year):
 		axes[empty_idx].axis('off')
 	# Overall title
 	fig.suptitle(
-		f'Formula 1 Circuit "Lateral G-Weighted Turning Density" Ranking ({year})',
+		f'LGWTD Ranking of {year} F1 Circuits',
 		fontsize=40,
 		fontweight='bold'
 	)
@@ -519,9 +519,9 @@ def make_LGWTD_gforce_circuit_maps(year):
 	)
 	cbar.set_label('Lateral Gs', fontsize=36)
 	# Format colorbar ticks
-	latG_ticks = np.linspace(Gmin, Gmax, Gmax+1)
+	latG_ticks = np.linspace(Gmin, Gmax, int(Gmax*2+1))
 	cbar.set_ticks(latG_ticks)
-	cbar.set_ticklabels([f'{tick:.0f}' for tick in latG_ticks])
+	cbar.set_ticklabels([f'{tick:.1f}' for tick in latG_ticks])
 	cbar.ax.tick_params(labelsize=26)
 	# Save and show
 	plt.savefig(
