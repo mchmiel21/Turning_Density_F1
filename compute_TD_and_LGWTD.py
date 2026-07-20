@@ -34,7 +34,8 @@ Path("Result CSVs").mkdir(exist_ok=True)
 Path("Result DataFrame Parquets").mkdir(exist_ok=True)
 
 ###### Helper functions: ######
-# Return all qualifying push laps
+# Return all qualifying push laps and whether the session was run on 
+# 33% or more inters or wet tires
 def get_qualifying_push_laps(session):
     laps = session.laps.copy()
     # Require actual lap times
@@ -54,7 +55,23 @@ def get_qualifying_push_laps(session):
     #     f"{session.event['Location']}: "
     #     f"{len(laps)} qualifying push laps"
     # )
-    return laps
+
+    # Determine wet or dry conditions based on tires
+    wet_or_dry = "Dry" # default
+    if not laps.empty and 'Compound' in laps.columns:
+        # Cast to string and uppercase to protect against variations
+        compounds = laps['Compound'].astype(str).str.upper()
+        
+        # Count rows where tire is INTERMEDIATE or WET
+        wet_lap_count = compounds.isin(['INTERMEDIATE', 'WET']).sum()
+        total_lap_count = len(laps)
+        
+        # Determine threshold (1/3rd of laps)
+        if (wet_lap_count / total_lap_count) >= (1/3):
+            wet_or_dry = "Wet"
+        else:
+            wet_or_dry = "Dry"
+    return laps, wet_or_dry
 
 def drop_repeat_xy_points(x, y, z, t, speed, dist):
     # Compute steps between each sample
@@ -145,9 +162,9 @@ def process_circuit(year, round_num):
         session.load(telemetry=True, laps=True, weather = False, messages = False)
         # Ensure laps are present
         if session.laps is None or session.laps.empty:
-                return None
+            return None
         # Get all valid qualifying laps
-        push_laps = get_qualifying_push_laps(session)
+        push_laps, wet_or_dry = get_qualifying_push_laps(session)
         if push_laps.empty:
             return None
         # Use the fastest valid lap as the geometry/reference lap
@@ -170,6 +187,7 @@ def process_circuit(year, round_num):
         g_turn_sum_values = []  
         speed_profiles_on_ref = []
         latG_profiles_on_ref = []
+        average_speeds = []
         # loop through all laps
         for _, lap in push_laps.iterrows():
             # get the lap data
@@ -182,7 +200,7 @@ def process_circuit(year, round_num):
             lap_data = extract_clean_data(lap, telemetry)
             if lap_data is None:
                 continue
-            x_lap, y_lap, _, _, speed_lap, dist_lap = lap_data
+            x_lap, y_lap, _, t_lap, speed_lap, dist_lap = lap_data
             # find Turning Density for this lap
             delta_degrees_lap, total_degrees_turned_lap = compute_turning_density_values(x_lap, y_lap)
             if delta_degrees_lap is None:
@@ -206,6 +224,7 @@ def process_circuit(year, round_num):
                 distance_values_km.append(dist_lap[-1]/1000) # km
                 turning_values_deg.append(total_degrees_turned_lap) # deg
                 g_turn_sum_values.append(total_g_times_delta_degrees_lap) # G-deg
+                average_speeds.append((dist_lap[-1]/1000)/(t_lap[-1]/3600)) # km/h
             # interpolate Speed profile and Lateral G profile interpolation onto fastest-lap reference grid
             # (for coloring circuit maps)
             s_interp = dist_lap / dist_lap[-1] # normalized distance traveled around the track (from 0 to 1)
@@ -251,6 +270,7 @@ def process_circuit(year, round_num):
         # (for color-coding circuit maps)
         speed_avg_quali = np.nanmean(np.vstack(speed_profiles_on_ref), axis=0)
         latG_avg_quali = np.nanmean(np.vstack(latG_profiles_on_ref), axis=0)
+        avg_speed_avg = np.nanmean(average_speeds)
 
         # # Debugging: Take a look to ensure data is reasonable
         # print(f"Turning Density = {turning_density:.2f} deg/km")
@@ -281,7 +301,9 @@ def process_circuit(year, round_num):
         return {
             'Round': round_num,
             'Circuit': circuit_name,
+            'Track Condition': wet_or_dry,
             'Track Length [km]': distance_km,
+            'Average Speed [km/h]': avg_speed_avg,
             'Total Turning [deg]': total_degrees,
             'Turning Density [deg/km]': turning_density,
             'Lateral G-Weighted Turning Density [G-deg/km]': g_weighted_turning_density,
@@ -345,12 +367,12 @@ if __name__ == "__main__":
     turning_density_df_ranking['Rank'] = turning_density_df_ranking['Turning Density [deg/km]'].rank(ascending=False, method='first').astype(int)
     turning_density_df_ranking = turning_density_df_ranking.sort_values(by='Rank').reset_index(drop=True)
     # Display results
-    print(f"\n----- F1 {year} CIRCUITS TURNING DENSITY LEADERBOARD -----")
-    print(turning_density_df_ranking[['Rank', 'Circuit', 'Total Turning [deg]', 'Track Length [km]', 'Turning Density [deg/km]', 'Lateral G-Weighted Turning Density [G-deg/km]']].to_string(index=False))
+    print(f"\n--------------- F1 {year} CIRCUITS TURNING DENSITY LEADERBOARD ---------------")
+    print(turning_density_df_ranking[['Rank', 'Circuit', 'Track Condition', 'Total Turning [deg]', 'Track Length [km]', 'Average Speed [km/h]', 'Turning Density [deg/km]', 'Lateral G-Weighted Turning Density [G-deg/km]']].to_string(index=False))
     # Rank and print by Lateral G-Weighted Turning Density
     latG_weighted_turning_density_df_ranking = pd.DataFrame(all_circuit_data)
     latG_weighted_turning_density_df_ranking['Rank'] = latG_weighted_turning_density_df_ranking['Lateral G-Weighted Turning Density [G-deg/km]'].rank(ascending=False, method='first').astype(int)
     latG_weighted_turning_density_df_ranking = latG_weighted_turning_density_df_ranking.sort_values(by='Rank').reset_index(drop=True)
     # Display results
-    print(f"\n----- F1 {year} CIRCUITS LATERAL G-WEIGHTED TURNING DENSITY LEADERBOARD -----")
-    print(latG_weighted_turning_density_df_ranking[['Rank', 'Circuit', 'Total Turning [deg]', 'Track Length [km]', 'Turning Density [deg/km]', 'Lateral G-Weighted Turning Density [G-deg/km]']].to_string(index=False))
+    print(f"\n--------------- F1 {year} CIRCUITS LATERAL G-WEIGHTED TURNING DENSITY LEADERBOARD ---------------")
+    print(latG_weighted_turning_density_df_ranking[['Rank', 'Circuit', 'Track Condition', 'Total Turning [deg]', 'Track Length [km]', 'Average Speed [km/h]', 'Turning Density [deg/km]', 'Lateral G-Weighted Turning Density [G-deg/km]']].to_string(index=False))

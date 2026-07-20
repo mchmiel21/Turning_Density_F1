@@ -6,8 +6,6 @@ Published July 2026
 
 @author: mchmiel21
 """
-# Select which year's data to run
-year = 2026
 
 # import necessary modules
 import fastf1
@@ -17,6 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 from matplotlib.cm import ScalarMappable
+from matplotlib.patches import Patch
 import seaborn as sns
 import time
 import logging
@@ -65,14 +64,22 @@ def make_bar_chart_single_year(metric, year):
 	df_metric_data['Circuit Type'] = df_metric_data['Circuit'].apply(
 		lambda x: 'Non-Permanent' if x in non_permanent_circuits else 'Permanent'
 	)
+	# Determine color configuration based on metric type
+	if metric == "LGWTD":
+        # Map values to custom colors for track conditions
+		color_palette = {'Dry': '#e10600', 'Wet': '#0066ff'}
+		hue_col = 'Track Condition'
+	else:
+        # Fall back to default Circuit Type mapping
+		color_palette = {'Non-Permanent': '#2b2b2b', 'Permanent': '#e10600'}
+		hue_col = 'Circuit Type'
 	# Create the horizontal bar plot
 	sns.set_theme(style="darkgrid")
 	plt.figure(figsize=(12, 8))
-	color_palette = {'Non-Permanent': '#ff1801', 'Permanent': '#1f77b4'} # F1 Red vs Sport Blue
 	ax = sns.barplot(
 		x=plot_col,
 		y='Circuit',
-		hue='Circuit Type',
+		hue=hue_col,
 		data=df_metric_data,
 		palette=color_palette,
 		dodge=False,
@@ -84,7 +91,7 @@ def make_bar_chart_single_year(metric, year):
 	plt.title(title_str, fontsize=16, fontweight='bold', pad=20)
 	plt.xlabel(xlabel_str, fontsize=14, labelpad=10)
 	plt.ylabel('Grand Prix Circuit', fontsize=14)
-	plt.legend(title='Circuit Classification', loc='lower right', frameon=True)
+	plt.legend(title=hue_col, loc='lower right', frameon=True)
 	# Add data value labels to the end of each bar
 	for p in ax.patches:
 		width = p.get_width()
@@ -104,6 +111,7 @@ def make_bar_chart_single_year(metric, year):
 	# plt.show()
 
 ######## function to make and save bar charts comparing multiple years ########
+# only plots shared circuits, orders by highest year per circuit
 def make_bar_chart_multiple_years(metric, years, rank_by_year):
     import pandas as pd
 import numpy as np
@@ -149,6 +157,11 @@ def make_bar_chart_multiple_years(metric, years):
             print(f"ERROR reading file for year {year}: {e}")
             return
     df_metric_data = pd.concat(df_list, ignore_index=True)
+	# Filter data to only include circuits shared between all input years
+    total_input_years = len(set(years))
+    shared_circuits = df_metric_data.groupby('Circuit')['Year'].nunique()
+    shared_circuits = shared_circuits[shared_circuits == total_input_years].index
+    df_metric_data = df_metric_data[df_metric_data['Circuit'].isin(shared_circuits)].reset_index(drop=True)
     # Rank order by requested metric based on the maximum value for each circuit across all years
     # Group by Circuit to find the max metric value across all rows, then map it back to create a global rank
     circuit_max_values = df_metric_data.groupby('Circuit')[plot_col].max()
@@ -168,6 +181,15 @@ def make_bar_chart_multiple_years(metric, years):
     df_metric_data['Circuit Type'] = df_metric_data['Circuit'].apply(
         lambda x: 'Non-Permanent' if x in non_permanent_circuits else 'Permanent'
     )
+	# Determine color configuration based on metric type
+    if metric == "LGWTD":
+        # Map values to custom colors for track conditions
+        color_palette = {'Dry': '#e10600', 'Wet': '#0066ff'}
+        hue_col = 'Track Condition'
+    else:
+        # Fall back to default Circuit Type mapping
+        color_palette = {'Non-Permanent': '#2b2b2b', 'Permanent': '#e10600'}
+        hue_col = 'Circuit Type'
     # Create the grouped horizontal bar plot
     sns.set_theme(style="darkgrid")
     plt.figure(figsize=(14, 10)) 
@@ -182,7 +204,6 @@ def make_bar_chart_multiple_years(metric, years):
         data=df_metric_data, 
         orient='h'
     )
-    color_palette = {'Non-Permanent': '#ff1801', 'Permanent': '#1f77b4'}
     # Map layout patches safely back to the data table coordinates 
     num_circuits = df_metric_data['Circuit'].nunique()
     num_years = len(sorted_years)
@@ -207,12 +228,12 @@ def make_bar_chart_multiple_years(metric, years):
             ]
             if not matched_rows.empty:
                 row = matched_rows.iloc[0]
-                circuit_type = row['Circuit Type']
+                bar_color = row[hue_col]
                 # Apply custom classification color dynamically
-                p.set_facecolor(color_palette[circuit_type])
+                p.set_facecolor(color_palette[bar_color])
                 # Write the year and metric value inside the bar
                 ax.text(
-                    width * 0.015,  # Tiny inset left margin
+                    5,  # Tiny inset left margin
                     y_center, 
                     f'{year_val}', 
                     ha='left', 
@@ -239,13 +260,9 @@ def make_bar_chart_multiple_years(metric, years):
     plt.title(title_str, fontsize=16, fontweight='bold', pad=20)
     plt.xlabel(xlabel_str, fontsize=14, labelpad=10)
     plt.ylabel('Grand Prix Circuit', fontsize=14)
-    # Overwrite default year legend with a clean classification display matching color assignments
-    from matplotlib.patches import Patch
-    legend_elements = [
-        Patch(facecolor=color_palette['Permanent'], label='Permanent'),
-        Patch(facecolor=color_palette['Non-Permanent'], label='Non-Permanent')
-    ]
-    plt.legend(handles=legend_elements, title='Circuit Classification', loc='lower right', frameon=True)
+    # Overwrite default year legend
+    legend_elements = [Patch(facecolor=color, label=label) for label, color in color_palette.items()]
+    plt.legend(handles=legend_elements, title=hue_col, loc='lower right', frameon=True)
     plt.tight_layout()
     # Save the plot
     years_str = "-".join(map(str, years))
@@ -289,12 +306,12 @@ def make_TD_speed_circuit_maps(year):
 	speed_cmap = LinearSegmentedColormap.from_list(
 		'speed_cmap',
 		[
-			"#001041",  # very slow: dark blue
-			'#0057ff',  # slow-medium: blue
-			'#66ccff',  # medium: light blue
-			'#ffb000',  # fast-ish: orange
-			"#b90f00",  # fast: red
-			"#690501"   # fastest: dark red
+			(0.00, "#001041"),  # Very slow: dark blue
+			(0.25, '#0057ff'),  # Slow-medium: blue
+			(0.45, '#66ccff'),  # Medium: light blue
+			(0.55, "#d49100"),  # Fast-ish: orange
+			(0.75, "#b90f00"),  # Fast: red
+			(1.00, "#690501")   # Fastest: dark red
 		]
 	)
 	# Generate each circuit map
@@ -471,8 +488,13 @@ def make_LGWTD_gforce_circuit_maps(year):
 		# Circuit title plus turning density printed
 		circuit_name = row['Circuit']
 		Gdeg_per_km = row['Lateral G-Weighted Turning Density [G-deg/km]']
+		wet_or_dry = row['Track Condition']
+		if wet_or_dry == "Wet":
+			wet_or_dry_annotation = " (Wet)"
+		else:
+			wet_or_dry_annotation = ""
 		ax.set_title(
-			f"{row['Rank']}. {circuit_name}\n{Gdeg_per_km:.1f} G-°/km",
+			f"{row['Rank']}. {circuit_name}\n{Gdeg_per_km:.1f} G-°/km{wet_or_dry_annotation}",
 			fontsize=26,
 			fontweight='bold'
 		)

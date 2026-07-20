@@ -19,9 +19,15 @@ The ***Lateral G-Weighted Turning Density (LGWTD)*** metric weights *Turning Den
     - CSV files containing the computed *Turning Density* (in deg/km) and *Lateral G-Weighted Turning Density* (in G-deg/km) and corresponding ranks, as well as the total turning (in degrees) and total distance (in km) used to calculate *Turning Density*
     - Parquet files containing all data in the CSV files, plus X/Y coordinate traces of each circuit and average speeds and lateral G forces experienced at all X/Y coordinates from qualifying
 - Plots/Images:
-    - Bar charts ranking all circuits by *TD* and *LGWTD*, color-coded by circuit type (permanent vs. non-permanent)
+    - Bar charts ranking all circuits by *TD*, color-coded by circuit type (permanent vs. non-permanent)
+    - Bar charts ranking all circuits by *LGWTD*, color-coded by track conditions (dry vs. wet)
+    - Bar charts with multiple bars to directly compare *TD* and/or *LGWTD* between different years at the same track
+        - Color-coding is the same as the single bar charts
+        - Only circuits contained in all years considered are included
+        - Ordered by the maximum metric value of each circuit across all years considered
     - A pictorial grid of circuit maps colored by qualifying speed, ordered from top-left to bottom-right by *TD* (highest to lowest)
     - A pictorial grid of circuit maps colored by lateral G-force, ordered from top-left to bottom-right by *LGWTD* (highest to lowest)
+        - Any wet condition qualifying sessions are noted as "(Wet Track)", as these values will be significantly lower than they otherwise would have been on a dry track
 
 ## Methodology
 - This code uses data from all valid qualifying push laps as follows: 
