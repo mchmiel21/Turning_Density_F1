@@ -545,6 +545,8 @@ if __name__ == "__main__":
 	# Create and save year comparison bar charts
 	make_bar_chart_multiple_years(metric="TD", years=[2024, 2025, 2026])
 	make_bar_chart_multiple_years(metric="LGWTD", years=[2024, 2025, 2026])
+	make_bar_chart_multiple_years(metric="TD", years=[2024, 2025])
+	make_bar_chart_multiple_years(metric="LGWTD", years=[2024, 2025])
 
 	# Create and save circuit maps ordered by Turning Density
 	# and colored by speed
