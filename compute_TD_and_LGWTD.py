@@ -125,7 +125,16 @@ def extract_clean_data(lap, lap_tel_data):
     # drop repeated combos of x and y:
     x, y, z, t, speed, dist = drop_repeat_xy_points(x, y, z, t, speed, dist)
 
-    return x, y, z, t, speed, dist
+    # interpolate onto constant grid of spatial steps for even comparisons across all grids
+    spatial_step_m = 10 # m, about 2 car lengths, slightly finer than the raw data average
+    new_distance_grid_m = np.append(np.arange(0, dist[-1], spatial_step_m), dist[-1])
+    x = np.interp(new_distance_grid_m, dist, x) # m
+    y = np.interp(new_distance_grid_m, dist, y) # m
+    z = np.interp(new_distance_grid_m, dist, z) # m
+    speed = np.interp(new_distance_grid_m, dist, speed) # km/h
+    t = np.interp(new_distance_grid_m, dist, t) # s
+
+    return x, y, z, t, speed, new_distance_grid_m
 
 # Compute variables related to Turning Density for a single lap
 def compute_turning_density_values(x, y):
